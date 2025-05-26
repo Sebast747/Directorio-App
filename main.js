@@ -1,40 +1,80 @@
-//En js tenemos las funciones de tipo flecha
-//Utilizando fetch que es un metodo para consumir una API
+async function obtenerUsuarios() {
+  const contenedor = document.getElementById("contenedor");
+  const titulo = document.querySelector("#tituloEncabezado");
 
-//Paso 1 : Funcion Flecha 
-const consumirApi = ()=> {
-    fetch("https://jsonplaceholder.typicode.com/users")
-    //convertimos la respuesta a tipo JSON
-    .then((response) => response.json())
-    //Los datos los vamos a mandar a la consola 
-    .then((data) => {
-//La data de la api la vamos a llevar al HTML
-//Paso 1.- Definirmos las constantes que vamos a usar el HTML que bamos a afcetar
-const nombre = document.getElementById("nombre");
-const nombreUsuario = document.getElementById("nombreUsuario");
-const email = document.getElementById("email");
-const phone = document.getElementById("phone");
-const website = document.getElementById("website");
+  const avatares = [
+  "https://randomuser.me/api/portraits/men/11.jpg",
+  "https://randomuser.me/api/portraits/women/22.jpg",
+  "https://randomuser.me/api/portraits/men/33.jpg",
+  "https://randomuser.me/api/portraits/women/44.jpg",
+  "https://randomuser.me/api/portraits/men/55.jpg",
+  "https://randomuser.me/api/portraits/women/66.jpg",
+  "https://randomuser.me/api/portraits/men/77.jpg",
+  "https://randomuser.me/api/portraits/women/88.jpg",
+  "https://randomuser.me/api/portraits/men/99.jpg",
+  "https://randomuser.me/api/portraits/women/10.jpg"
+];
 
-nombre.innerText = data[1].name;
-nombreUsuario.innerText = data[1].username;
-email.innerText = data[1].email;
-phone.innerText = data[1].phone;
-website.innerText = data[1].website;
-})  
-    //descubrir que hacer en caso de que no me corresponda 
-    .catch((error) => console.log(error));
 
-//El DOM - Document object Model
-// Semana 2: Apartir de esta sesion, vamos a identificar a los elementos del HTML con un "id"
+  try {
+    // Mostrar loader temporal
+    contenedor.innerHTML = `<p class="cargando">Cargando usuarios...</p>`;
 
-//Creo una constante y le paso como valor el id del H1 que esta en la linea 17 en mi HTML
-//con getElementById
-const titulo = document.getElementById("tituloEncabezado") ;
+    const respuesta = await fetch("https://jsonplaceholder.typicode.com/users");
+    const usuarios = await respuesta.json();
 
-//Imprimo la varible titulo pero con el atributo tectContent
-console.log(titulo.textContent);
+    contenedor.innerHTML = ""; // Limpiar el loader
 
-};
+    usuarios.forEach((usuario, index) => {
+      const card = crearTarjetaUsuario(usuario, avatares[index % avatares.length]);
+      contenedor.appendChild(card);
+    });
 
-consumirApi();
+    console.log("Encabezado:", titulo?.textContent);
+
+  } catch (error) {
+    console.error("Error al cargar usuarios:", error);
+    contenedor.innerHTML = `<p class="error">No se pudieron cargar los usuarios. Intenta de nuevo más tarde.</p>`;
+  }
+}
+
+function crearTarjetaUsuario(usuario, avatarUrl) {
+  const card = document.createElement("div");
+  card.className = "card shadow p-4 m-3 text-center rounded";
+
+  const img = document.createElement("img");
+  img.src = avatarUrl;
+  img.alt = `Avatar de ${usuario.name}`;
+  img.className = "rounded-circle mb-3";
+  img.style.width = "90px";
+
+  const nombre = document.createElement("h4");
+  nombre.className = "text-primary fw-bold";
+  nombre.textContent = usuario.name;
+
+  const datos = [
+    { label: "Usuario", value: usuario.username },
+    { label: "Email", value: usuario.email },
+    { label: "Tel", value: usuario.phone },
+    { label: "Ciudad", value: usuario.address.city }
+  ];
+
+  const datosHTML = datos.map(d => {
+    const p = document.createElement("p");
+    p.innerHTML = `<strong>${d.label}:</strong> ${d.value}`;
+    return p;
+  });
+
+  const social = document.createElement("div");
+  social.className = "d-flex justify-content-center gap-3 mt-2";
+  social.innerHTML = `
+    <i class="fab fa-facebook text-secondary"></i>
+    <i class="fab fa-twitter text-secondary"></i>
+    <i class="fab fa-instagram text-secondary"></i>
+  `;
+
+  card.append(img, nombre, ...datosHTML, social);
+  return card;
+}
+
+obtenerUsuarios();
